@@ -1,0 +1,38 @@
+version: '3'
+services:
+  #Python service
+  app:
+    build:
+      context: .
+    container_name: estate_bot_app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    working_dir: /usr/src/app
+    volumes:
+      - ./:/usr/src/app
+    networks:
+      - app-network
+
+  #Sqlite service
+  db:
+    image: nouchka/sqlite3:latest
+    container_name: estate_bot_db
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./:/usr/src/app
+    networks:
+      - app-network
+
+#Docker networks
+networks:
+  app-network:
+    driver: bridge
+
+#Volumes
+volumes:
+  dbdata:
+    driver: local

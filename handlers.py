@@ -1,25 +1,15 @@
 from random import randint
 from telethon import events, Button
 from telethon.tl.custom import Message, Conversation
-
-
 from gen import bot
 import sqlite3
-
-
-
-
-
 
 conn = sqlite3.connect('db.db', check_same_thread=False)
 cursor = conn.cursor()
 
-
-
 def db_table_val(name_man: str, city_man: str, name_cus: str, target: str, kush: int, info: str):
     cursor.execute('INSERT INTO requests (name_man, city_man, name_cus, target, kush, info) VALUES (?, ?, ?, ?, ?, ?)', (name_man, city_man, name_cus, target, kush, info))
     conn.commit()
-
 
 def read_db():
     sqlite_select_query = """SELECT * from requests"""
@@ -28,13 +18,10 @@ def read_db():
     cursor.close()
     return records
 
-
-
 @bot.on(events.NewMessage(func=lambda event: event.text.lower() == 'привет'))
 async def reload_command(event: Message):
     markup = [Button.text('заявка', single_use=True), Button.text('все заявки')]
     await event.respond('Привет! Ориентируйтесь по кнопкам ниже',buttons=markup)
-
 
 @bot.on(events.NewMessage(func=lambda event: event.text.lower() == 'все заявки'))
 async def all_offers(event):
@@ -49,8 +36,6 @@ async def all_offers(event):
                 Бюджет: {row[4]}
                 Дополнительная информация:{row[5]}
                 ''')
-
-
 
 @bot.on(events.NewMessage(func=lambda event: event.text.lower() == 'заявка'))
 async def reload_command(event: Message):
@@ -113,6 +98,3 @@ async def handler(event):
 @bot.on(events.NewMessage(pattern=r'(?i).*сука'))
 async def handler(event):
     await event.delete()
-
-
-

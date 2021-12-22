@@ -4,19 +4,16 @@ from telethon import TelegramClient
 
 import config
 
-
 class Bot(TelegramClient):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.me = None
-
 
 bot = Bot('bot', config.API_ID, config.API_HASH)
 bot.parse_mode = 'HTML'
 logging.basicConfig(format='[%(levelname) 5s/%(asctime)s] %(name)s: %(message)s',level=logging.DEBUG)
 
 import handlers
-
 
 async def start():
     await bot.connect()
@@ -26,5 +23,3 @@ async def start():
 
 def run():
     bot.loop.run_until_complete(start())
-
-
