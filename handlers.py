@@ -1,15 +1,29 @@
 from random import randint
 from telethon import events, Button
-from telethon.tl.custom import Message, Conversation
+from telethon.tl.custom import Message
 from gen import bot
 import sqlite3
+
+
+markup = [Button.text('заявка', single_use=True, resize=True), Button.text('все заявки')]
+
 
 conn = sqlite3.connect('db.db', check_same_thread=False)
 cursor = conn.cursor()
 
+
 def db_table_val(name_man: str, city_man: str, name_cus: str, target: str, kush: int, info: str):
+    cursor.execute('''CREATE TABLE IF NOT EXISTS requests(
+        name_man CHAR   NOT NULL,
+        city_man CHAR   NOT NULL,
+        name_cus CHAR   NOT NULL,
+        target   CHAR   NOT NULL,
+        kush     CHAR   NOT NULL,
+        info     STRING NOT NULL
+        ); ''')
     cursor.execute('INSERT INTO requests (name_man, city_man, name_cus, target, kush, info) VALUES (?, ?, ?, ?, ?, ?)', (name_man, city_man, name_cus, target, kush, info))
     conn.commit()
+
 
 def read_db():
     sqlite_select_query = """SELECT * from requests"""
@@ -18,10 +32,11 @@ def read_db():
     cursor.close()
     return records
 
+
 @bot.on(events.NewMessage(func=lambda event: event.text.lower() == 'привет'))
 async def reload_command(event: Message):
-    markup = [Button.text('заявка', single_use=True), Button.text('все заявки')]
-    await event.respond('Привет! Ориентируйтесь по кнопкам ниже',buttons=markup)
+    await event.respond('Привет! Ориентируйтесь по кнопкам ниже', buttons=markup)
+
 
 @bot.on(events.NewMessage(func=lambda event: event.text.lower() == 'все заявки'))
 async def all_offers(event):
@@ -37,11 +52,10 @@ async def all_offers(event):
                 Дополнительная информация:{row[5]}
                 ''')
 
+
 @bot.on(events.NewMessage(func=lambda event: event.text.lower() == 'заявка'))
-async def reload_command(event: Message):
-    # await event.respond('все баломуты забанены :)')
+async def get_offer(event: Message):
     chat = await event.get_chat()
-    # print(chat)
 
     async with bot.conversation(event.chat_id) as conv:
         
@@ -51,7 +65,7 @@ async def reload_command(event: Message):
         name_man = response.text
         await conv.send_message('Рады знакомству,{}!'.format(name_man))
 
-        await conv.send_message(f'Из какого Вы города ?')
+        await conv.send_message('Из какого Вы города ?')
         response = await conv.get_response()
         city_man = response.text
         await conv.send_message('Отлично, теперь давайте перейдём к клиенту!')
@@ -73,7 +87,6 @@ async def reload_command(event: Message):
         info = response.text
 
         await conv.send_message('Отлично! заявка сформирована и отправлена на модерацию')
-        markup = [Button.text('заявка'), Button.text('все заявки')]
         await conv.send_message(f'''
             Предварительный просмотр заявки:
 
@@ -86,7 +99,8 @@ async def reload_command(event: Message):
             ''', buttons=markup)
         
         db_table_val(name_man, city_man, name_cus, target, kush, info)
-        
+   
+
 @bot.on(events.NewMessage(outgoing=False, pattern='hi'))
 async def handler(event):
     if event.is_reply:
@@ -96,5 +110,5 @@ async def handler(event):
 
 
 @bot.on(events.NewMessage(pattern=r'(?i).*сука'))
-async def handler(event):
+async def handler1(event):
     await event.delete()
