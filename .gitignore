@@ -2,3 +2,4 @@
 ./db.db
 ./bot.session
 ./bot.session-journal
+./config.py
