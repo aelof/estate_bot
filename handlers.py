@@ -6,6 +6,7 @@ import sqlite3
 
 
 markup = [Button.text('заявка', single_use=True, resize=True), Button.text('все заявки')]
+markup2 = [Button.text('Да', single_use=True, resize=True), Button.text('Нет')]
 
 
 conn = sqlite3.connect('db.db', check_same_thread=False)
@@ -33,7 +34,7 @@ def read_db():
     return records
 
 
-@bot.on(events.NewMessage(func=lambda event: event.text.lower() == 'привет'))
+@bot.on(events.NewMessage(pattern='/start'))
 async def reload_command(event: Message):
     await event.respond('Привет! Ориентируйтесь по кнопкам ниже', buttons=markup)
 
@@ -59,35 +60,36 @@ async def get_offer(event: Message):
 
     async with bot.conversation(event.chat_id) as conv:
         
-        await conv.send_message('Сейчас мы с Вамим по шагам создадим завку, это очень быстро и просто')
-        await conv.send_message('Немного информации о Вас, напишите Ваше имя:')
-        response = await conv.get_response()
-        name_man = response.text
-        await conv.send_message('Рады знакомству,{}!'.format(name_man))
+        right = False
+        while right is not True:
+            await conv.send_message('Сейчас мы с Вамим по шагам создадим завку, это очень быстро и просто')
+            await conv.send_message('Немного информации о Вас, напишите Ваше имя:')
+            response = await conv.get_response()
+            name_man = response.text
+            await conv.send_message('Рады знакомству,{}!'.format(name_man))
 
-        await conv.send_message('Из какого Вы города ?')
-        response = await conv.get_response()
-        city_man = response.text
-        await conv.send_message('Отлично, теперь давайте перейдём к клиенту!')
+            await conv.send_message('Из какого Вы города ?')
+            response = await conv.get_response()
+            city_man = response.text
+            await conv.send_message('Отлично, теперь давайте перейдём к клиенту!')
 
-        await conv.send_message(f'Скажите, {name_man}, как зовут Вашего клиента ?')
-        response = await conv.get_response()
-        name_cus = response.text
-        
-        await conv.send_message('Какая у него цель покупки ? (инвестиции или ПМЖ)')
-        response = await conv.get_response()
-        target = response.text
+            await conv.send_message(f'Скажите, {name_man}, как зовут Вашего клиента ?')
+            response = await conv.get_response()
+            name_cus = response.text
+            
+            await conv.send_message('Какая у него цель покупки ?\n(инвестиции или ПМЖ)')
+            response = await conv.get_response()
+            target = response.text
 
-        await conv.send_message('Каков бюджет ?')
-        response = await conv.get_response()
-        kush = response.text
+            await conv.send_message('Каков бюджет ?')
+            response = await conv.get_response()
+            kush = response.text
 
-        await conv.send_message('Отлично, теперь напишите сопроводительную информацию (всё то, что считаете нужным')
-        response = await conv.get_response()
-        info = response.text
+            await conv.send_message('Отлично, теперь напишите сопроводительную информацию (всё то, что считаете нужным')
+            response = await conv.get_response()
+            info = response.text
 
-        await conv.send_message('Отлично! заявка сформирована и отправлена на модерацию')
-        await conv.send_message(f'''
+            await conv.send_message(f'''
             Предварительный просмотр заявки:
 
             Имя менеджера : {name_man}
@@ -95,9 +97,18 @@ async def get_offer(event: Message):
             Имя клиента: {name_cus}
             Цель покупки: {target}
             Бюджет: {kush}
-            Дополнительная информация:{info}
-            ''', buttons=markup)
-        
+            Дополнительная информация:{info}''')
+
+            await conv.send_message('Всё ли верно ?', buttons=markup2)
+            response = await conv.get_response()
+            if response.text == 'Да':
+                right = True
+                await conv.send_message(f'Отлично,{name_man}, Ваша заявка сформирована и отправлена на модерацию')
+
+            else: 
+                await conv.send_message('Тогда давайте заново :)')
+
+
         db_table_val(name_man, city_man, name_cus, target, kush, info)
    
 
